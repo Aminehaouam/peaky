@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "kinetic-typography": {
+      "source": "iart-ai/kinetic-typography-skills",
+      "sourceType": "github",
+      "skillPath": "skills/kinetic-typography/SKILL.md",
+      "computedHash": "1a59da2f9bf89dcdd23ac35248f7e40ae1586e670a10408edad8728169dfb415"
+    }
+  }
+}
