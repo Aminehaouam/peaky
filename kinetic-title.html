@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetic Typography — Peaky</title>
+<style>
+  :root {
+    --ink: #f4efe6;
+    --dim: #8c857a;
+    --accent: #e8572a;
+    --bg: #111010;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .card { width: min(1100px, 90vw); }
+
+  /* Static type first: tight display tracking and leading */
+  .eyebrow {
+    font-size: 14px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700;
+    clip-path: inset(0 100% 0 0);
+    animation: wipe 0.7s var(--ease-out) 0.1s forwards;
+  }
+  .headline {
+    margin-top: 24px;
+    font-size: clamp(48px, 8vw, 112px);
+    line-height: 1.05; letter-spacing: -0.035em; font-weight: 800;
+  }
+  .brand {
+    margin-top: 32px;
+    font-size: clamp(64px, 14vw, 200px);
+    line-height: 0.9; letter-spacing: -0.04em; font-weight: 900;
+    color: var(--accent);
+  }
+  .tagline {
+    margin-top: 32px; max-width: 34ch;
+    font-size: clamp(18px, 2vw, 24px); line-height: 1.5; color: var(--dim);
+  }
+
+  /* 1. Mask reveal, by line */
+  .line { display: block; overflow: hidden; padding-bottom: 0.08em; }
+  .line > span {
+    display: inline-block; transform: translateY(110%);
+    animation: rise 0.6s var(--ease-out) forwards;
+  }
+  /* 2. Character stagger: rise + fade */
+  .char {
+    display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(8deg);
+    animation: pop 0.5s var(--ease-out) forwards;
+  }
+  /* 3. Word blur-in */
+  .word {
+    display: inline-block; opacity: 0; filter: blur(10px);
+    animation: focus 0.55s var(--ease-out) forwards;
+  }
+
+  @keyframes wipe  { to { clip-path: inset(0 0 0 0); } }
+  @keyframes rise  { to { transform: translateY(0); } }
+  @keyframes pop   { to { opacity: 1; transform: none; } }
+  @keyframes focus { to { opacity: 1; filter: blur(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .reveal * {
+      animation: none !important; opacity: 1 !important;
+      transform: none !important; filter: none !important; clip-path: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="card reveal">
+    <p class="eyebrow">A kinetic type study</p>
+    <h1 class="headline" data-split="lines">Words that|move with|intent.</h1>
+    <div class="brand" data-split="chars">PEAKY</div>
+    <p class="tagline" data-split="words">Mask reveals, character staggers and blur-in focus pulls, all driven by plain CSS keyframes.</p>
+  </main>
+
+<script>
+  // Screen-reader-safe split: full string on the container, fragments aria-hidden.
+  function split(el, start, gap) {
+    const mode = el.dataset.split;
+    const text = el.textContent;
+    el.setAttribute("aria-label", text.replace(/\|/g, " "));
+    el.textContent = "";
+    const add = (node) => { node.setAttribute("aria-hidden", "true"); el.appendChild(node); };
+
+    if (mode === "lines") {
+      text.split("|").forEach((l, i) => {
+        const line = document.createElement("span"); line.className = "line";
+        const inner = document.createElement("span"); inner.textContent = l;
+        inner.style.animationDelay = (start + i * gap) + "s";
+        line.appendChild(inner); add(line);
+      });
+    } else if (mode === "chars") {
+      [...text].forEach((c, i) => {
+        const s = document.createElement("span"); s.className = "char"; s.textContent = c;
+        s.style.animationDelay = (start + i * gap) + "s"; add(s);
+      });
+    } else if (mode === "words") {
+      text.split(" ").forEach((w, i) => {
+        const s = document.createElement("span"); s.className = "word"; s.textContent = w;
+        s.style.animationDelay = (start + i * gap) + "s"; add(s);
+        el.appendChild(document.createTextNode(" "));
+      });
+    }
+  }
+
+  document.fonts.ready.then(() => {
+    // Timeline (seconds): eyebrow 0.1 → lines 0.35 → chars 1.0 → words 1.5. Ends ≈ 2.8s.
+    split(document.querySelector(".headline"), 0.35, 0.09);  // lines: 90ms
+    split(document.querySelector(".brand"),    1.0,  0.04);  // chars: 40ms
+    split(document.querySelector(".tagline"),  1.5,  0.06);  // words: 60ms
+
+    // Freeze harness: ?t=N pins the frame at N seconds.
+    const t = new URLSearchParams(location.search).get("t");
+    if (t !== null) {
+      const T = parseFloat(t);
+      document.querySelectorAll(".reveal, .reveal *").forEach(el => {
+        const d = parseFloat(getComputedStyle(el).animationDelay) || 0;
+        el.style.animationDelay = (d - T) + "s";
+        el.style.animationPlayState = "paused";
+      });
+    }
+    window.__ready = true;
+  });
+</script>
+</body>
+</html>
