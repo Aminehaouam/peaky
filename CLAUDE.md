@@ -62,3 +62,17 @@ Uses `yt-dlp --download-sections "*START-END" --force-keyframes-at-cuts`, so onl
 
 ## Environment note
 In the Claude Code cloud sandbox, the network policy must allow `youtube.com`, `googlevideo.com`, `ytimg.com`, `archive.org` (and `*.archive.org`). Otherwise searches and downloads fail with `Tunnel connection failed: 403`.
+
+## Period edits (`era_edit.py`)
+Makes a 30-second moody 1910s–20s industrial-England edit from public-domain archive film: a typewriter caption, 10 shots cut on a heartbeat score, then a title card.
+```bash
+python era_edit.py fetch -n 6                 # Archive.org films, PD/CC or published <= 1930 -> footage/raw/
+python era_edit.py shots                      # scene detection; drops intertitles, black and static shots
+python era_edit.py sheet                      # contact sheets in footage/sheets/ for hand-picking shots
+python era_edit.py render                     # auto-picks shots -> clips/era_edit.mp4 (+ .credits.txt, .plan.json)
+python era_edit.py render --plan my_plan.json --vertical --caption "..." --title "..." --subtitle "..."
+python era_edit.py demo                       # offline test on synthetic footage
+```
+To make it good, look at the contact sheets, then edit the saved `.plan.json`: pick 10 strong shots and set `ypos` (0 = top, 1 = bottom) to frame faces. Re-render with `--plan`.
+Look: B&W base, crushed blacks, cold shadows and amber highlights, 2.39:1 letterbox, grain, vignette, projector flicker, 0.8× speed. The score is synthesised (drone, heartbeat, final boom), so there's no music licensing.
+Captions and titles must stay original. Don't use the names, catchphrases or logos of existing shows.
