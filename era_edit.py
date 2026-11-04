@@ -317,7 +317,7 @@ def cmd_render(a):
         dst = OUT / (a.out or ("era_edit_vertical.mp4" if a.vertical else "era_edit.mp4"))
         ff("-i", tmp / "cut.mp4", "-i", tmp / "score.m4a", "-filter_complex",
            f"[0:v]{','.join(vf)}[v]", "-map", "[v]", "-map", "1:a", "-t", total,
-           "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-c:a", "copy",
+           "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-maxrate", "12M", "-bufsize", "24M", "-c:a", "copy",
            "-movflags", "+faststart", dst)
     # credits for every source used
     srcs = sorted({p["src"] for p in plan})
